@@ -1,0 +1,30 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="Desktop_MCTiers.MainWindow"
+        Title="Desktop MCTiers">
+    <TabControl>
+        <TabItem Header="Search">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <ComboBox Margin="0 10" SelectedIndex="0">
+                    <ComboBoxItem>MCTiers</ComboBoxItem>
+                    <ComboBoxItem>SubTiers</ComboBoxItem>
+                    <ComboBoxItem>PVPTiers</ComboBoxItem>
+                </ComboBox>
+                <Label FontSize="40" Margin="0 20">Desktop-MCTiers</Label>
+                <Label FontSize="20" HorizontalAlignment="Center">Search for a player</Label>
+                <TextBox x:Name="SearchBox" Margin="0 10"></TextBox>
+                <Button x:Name="SearchButton" HorizontalAlignment="Center" Click="SearchButtonClick">Search</Button>
+                <ProgressBar x:Name="SearchProgressBar" Margin="0 10"></ProgressBar>
+            </StackPanel>
+        </TabItem>
+        <TabItem Header="Top Players">
+            Nothing here..
+        </TabItem>
+        <TabItem Header="Settings">
+            <Button>About</Button>
+        </TabItem>
+    </TabControl>
+</Window>
