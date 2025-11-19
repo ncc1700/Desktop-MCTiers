@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-
+using static Desktop_MCTiers.Sites;
 namespace Desktop_MCTiers;
-public class MojangAPI
+
+public class MojangApi
 {
     public string? id { get; set; }
     public string? name { get; set; }
@@ -19,41 +19,36 @@ public class Tier
     public int pos { get; set; }
     public int peak_tier { get; set; }
     public int peak_pos { get; set; }
-    public int attained { get; set; }
+    public long attained { get; set; }
     public bool retired { get; set; }
 }
 public class TierList
 {
     public Dictionary<string, Tier>? root;
 }
+
+public class Badges
+{
+    public string? title { get; set; }
+    public string? desc { get; set; }
+}
+
+public class Profile
+{
+    public string? uuid { get; set; }
+    public string? name { get; set; }
+    public string? region { get; set; }
+    public int? points { get; set; }
+    public int? overall {get; set;}
+    public Dictionary<string, Tier>? rankings { get; set; }
+    public List<Badges>? badges { get; set; }
+}
+
 public class Search
 {
-    private Dictionary<string, Tier>? api;
+    private Profile? _api;
     private int _tierToSearchFrom;
-    private static HttpClient _mojangApi = new()
-    {
-        BaseAddress = new Uri("https://api.mojang.com"),
-    };
     
-    private static HttpClient _mctiers = new()
-    {
-        BaseAddress = new Uri("https://mctiers.com"),
-    };
-    
-    
-    private static HttpClient _pvptiers = new()
-    {
-        BaseAddress = new Uri("https://pvptiers.com"),
-    };
-    
-    private static HttpClient _subtiers = new()
-    {
-        BaseAddress = new Uri("https://subtiers.net"),
-    };
-    private static HttpClient _mcheads = new()
-    {
-        BaseAddress = new Uri("https://www.mc-heads.net"),
-    };
     
     public Search(int tierToSearchFrom)
     {
@@ -68,7 +63,7 @@ public class Search
         String mojangUuidSearch = "/users/profiles/minecraft/" + playerName;
         try
         {
-            mojangUuidSearchResponse = await _mojangApi.GetAsync(mojangUuidSearch);
+            mojangUuidSearchResponse = await Sites.MojangApi.GetAsync(mojangUuidSearch);
         }
         catch (HttpRequestException e)
         {
@@ -85,7 +80,7 @@ public class Search
             return null;
         }
         Console.WriteLine(json);
-        MojangAPI? api = JsonSerializer.Deserialize<MojangAPI>(json);
+        MojangApi? api = JsonSerializer.Deserialize<MojangApi>(json);
         return api?.id;
     }
     
@@ -96,7 +91,7 @@ public class Search
         String headSearch = "/head/" + uuid;
         try
         {
-            headSearchResponse = await _mcheads.GetAsync(headSearch);
+            headSearchResponse = await McHeads.GetAsync(headSearch);
         }
         catch (HttpRequestException e)
         {
@@ -125,23 +120,23 @@ public class Search
         return path;
     }
     
-    public async Task<Dictionary<string, Tier>?> ReturnTierLists(String uuid)
+    public async Task<Profile?> ReturnTierLists(String uuid)
     {
         HttpResponseMessage tierListResponse;
         
-        String mojangUuidSearch = "/api/rankings/" + uuid;
+        String tierSearch = "/api/profile/" + uuid;
         try
         {
             switch (_tierToSearchFrom)
             {
                 case 1:
-                    tierListResponse = await _subtiers.GetAsync(mojangUuidSearch);
+                    tierListResponse = await SubTiers.GetAsync(tierSearch);
                     break;
                 case 2:
-                    tierListResponse  = await _pvptiers.GetAsync(mojangUuidSearch);
+                    tierListResponse  = await PvpTiers.GetAsync(tierSearch);
                     break;
                 default:
-                    tierListResponse = await _mctiers.GetAsync(mojangUuidSearch);
+                    tierListResponse = await McTiers.GetAsync(tierSearch);
                     break;
             }
         }
@@ -150,23 +145,23 @@ public class Search
             Console.WriteLine(e.Message);
             return null;
         }
-        String json;
         try
         {
-            json = await tierListResponse.Content.ReadAsStringAsync();
-            api = JsonSerializer.Deserialize<Dictionary<string, Tier>>(json);
-
+            String json = await tierListResponse.Content.ReadAsStringAsync();
+            _api = JsonSerializer.Deserialize<Profile?>(json);
         }
         catch (Exception e)
         {
+            Console.WriteLine(e.Message);
             return null;
         }
-        return api;
+        Console.WriteLine(_api.region);
+        return _api;
     }
 
-    public Tier? returnTierFromKey(String key)
+    public Tier? ReturnTierFromKey(string? key)
     {
-        foreach (KeyValuePair<string, Tier> entry in api)
+        foreach (KeyValuePair<string, Tier> entry in _api.rankings)
         {  
             if(entry.Key == key) return entry.Value;
         }

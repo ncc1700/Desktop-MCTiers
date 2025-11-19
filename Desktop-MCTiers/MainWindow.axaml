@@ -5,56 +5,80 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="Desktop_MCTiers.MainWindow"
         Title="Desktop MCTiers">
-    <TabControl>
-        <TabItem Header="Search">
-            <TabControl x:Name="SearchResultTabs">
-                <TabItem>
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock FontSize="20" FontStyle="Italic" Margin="-30 10" x:Name="SearchError"></TextBlock>
-                        <ComboBox Margin="0 10" SelectedIndex="0" x:Name="SearchComboBox">
-                            <ComboBoxItem>MCTiers</ComboBoxItem>
-                            <ComboBoxItem>SubTiers</ComboBoxItem>
-                            <ComboBoxItem>PVPTiers</ComboBoxItem>
-                        </ComboBox>
-                        <Label FontSize="40" Margin="0 20">Desktop-MCTiers</Label>
-                        <Label FontSize="20" HorizontalAlignment="Center">Search for a player</Label>
-                        <TextBox x:Name="SearchBox" Margin="0 10"></TextBox>
-                        <Button x:Name="SearchButton" HorizontalAlignment="Center" Click="SearchButtonClick">Search</Button>
-                        <ProgressBar x:Name="SearchProgressBar" Margin="0 10"></ProgressBar>
+    
+    <TabControl TabStripPlacement="Left" SelectionChanged="SelectingItemsControl_OnSelectionChanged" x:Name="Tabs">
+        <TabItem Header="Search" >
+            <Carousel x:Name="SearchResultTabs" SelectedIndex="0">
+                <Viewbox Width="300" Height="300">
+                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <TextBlock FontSize="10" x:Name="SearchError"></TextBlock>
+                        <Label FontSize="20" Margin="0 0">Search for a player</Label>
+                        <TextBox x:Name="SearchBox" Margin="0 5"></TextBox>
+                        <Button x:Name="SearchButton" 
+                                HorizontalAlignment="Center" 
+                                Click="SearchButtonClick" 
+                                VerticalAlignment="Bottom" Margin="0 0">Search</Button>
+                        <ProgressBar x:Name="SearchProgressBar" Margin="0 30" IsVisible="False"></ProgressBar>
                     </StackPanel>
-                </TabItem>
-                <TabItem>
-                    <Panel>
-                        <TextBlock Margin="0 0" FontSize="20" x:Name="ResultTop"></TextBlock>
-                        <Image 
-                            x:Name="ResultImage"
-                            Width="200"
-                            Height="200" 
-                            HorizontalAlignment="Center"
-                            Margin="-100 -100"></Image>
-                        <Button HorizontalAlignment="Right" Margin="0 60" Click="ResultExitButtonClick">Exit</Button>
-                        <TextBlock HorizontalAlignment="Right" FontSize="30" Margin="0 0" x:Name="ResultFirst"></TextBlock>
-                        <TextBlock HorizontalAlignment="Right" FontSize="30" Margin="0 30" x:Name="ResultSecond"></TextBlock>
-                        <TextBlock HorizontalAlignment="Right" FontSize="30" Margin="0 60" x:Name="ResultThird"></TextBlock>
-                        <ListBox 
-                            SelectionChanged="SearchResultList_OnSelectionChanged"
-                            HorizontalAlignment="Left" 
-                            x:Name="SearchResultList" 
-                            Margin="0 40">
-                        </ListBox>
-                        
-                    </Panel>
+                </Viewbox>
+                <Grid>
+                    <StackPanel HorizontalAlignment="Right">
+                        <Grid>
+                            <TextBlock Margin="0 150" FontSize="30" x:Name="ResultName" HorizontalAlignment="Right"></TextBlock>
+                            <TextBlock Margin="0 180" FontSize="30" x:Name="ResultPoints" HorizontalAlignment="Right"></TextBlock>
+                            <TextBlock Margin="0 210" FontSize="30" x:Name="ResultOverall" HorizontalAlignment="Right"></TextBlock>
+                            <Image 
+                                x:Name="ResultImage"
+                                Height="150" 
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Top"
+                                Margin="0 5"></Image>
+                            <TextBlock HorizontalAlignment="Center"></TextBlock>
+                        </Grid>
+                    </StackPanel>
                     
-                    
-                </TabItem>
-            </TabControl>
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="0 10" x:Name="ResultFirst"></TextBlock>
+                    <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top" FontSize="20" Margin="0 30" x:Name="ResultSecond"></TextBlock>
+                    <ListBox 
+                        SelectionChanged="SearchResultList_OnSelectionChanged"
+                        HorizontalAlignment="Left" 
+                        x:Name="SearchResultList" 
+                        Margin="0 90"
+                        Scroll="">
+                    </ListBox>
+                    <Button HorizontalAlignment="Right" Margin="0 10" Click="ResultExitButtonClick" VerticalAlignment="Bottom">Exit</Button>
+
+                </Grid>
+            </Carousel>
             
         </TabItem>
         <TabItem Header="Top Players">
-            Nothing here..
+            <ListBox x:Name="TopPlayers" Scroll="">
+                
+            </ListBox>
         </TabItem>
         <TabItem Header="Settings">
-            <Button>About</Button>
+            
+            <ScrollViewer>
+                <Panel>
+                    <TitleBar>
+                    <!-- //https://mctiers.com/api/tier/overall?count=10 -->
+                    </TitleBar>
+                    <Label FontSize="20" Margin="0 90">Tierlist to search from: </Label>
+                    <ComboBox SelectedIndex="0" x:Name="SearchComboBox" Margin="225 90">
+                        <ComboBoxItem>MCTiers</ComboBoxItem>
+                        <ComboBoxItem>SubTiers</ComboBoxItem>
+                        <ComboBoxItem>PVPTiers</ComboBoxItem>
+                    </ComboBox>
+                    <Label FontSize="20" Margin="0 130">Theme: </Label>
+                    <ComboBox SelectedIndex="0" x:Name="Theme" Margin="80 130" SelectionChanged="Theme_OnSelectionChanged">
+                        <ComboBoxItem>Default</ComboBoxItem>
+                        <ComboBoxItem>Light</ComboBoxItem>
+                        <ComboBoxItem>Dark</ComboBoxItem>
+                    </ComboBox>
+                </Panel>
+                
+            </ScrollViewer>
         </TabItem>
     </TabControl>
 </Window>

@@ -4,61 +4,89 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 
 namespace Desktop_MCTiers;
 
-using static Search;
-
+using static TopPlayers;
 
 
 public partial class MainWindow : Window
 {
-    private Search? search;
+    private readonly ArrayList _list = new ArrayList();
+    private Search? _search;
     public MainWindow()
     {
         InitializeComponent();
     }
-    public async Task SearchForPlayer()
+
+    private void ResetSearchState()
     {
+        SearchProgressBar.IsVisible = false;
+        ResultPoints.Text = null;
+        ResultName.Text = null;
+        ResultOverall.Text = null;
+        SearchButton.IsEnabled = true;
+        SearchBox.IsEnabled = true;
+        SearchProgressBar.Value = 0;
+        SearchResultTabs.SelectedIndex = 0;
+        _search = null;
+    }
+    private async Task SearchForPlayer()
+    {
+        if (SearchBox.Text is null)
+        {
+            ResetSearchState();
+            return;
+        }
         String name = SearchBox.Text;
-        search = new Search(SearchComboBox.SelectedIndex);
-        String? uuid = await search.ReturnUuid(name);
+        // just in case
+        _search = null;
+        _search = new Search(SearchComboBox.SelectedIndex);
+        
+        // we get the uuid from the name
+        String? uuid = await _search.ReturnUuid(name);
         if (uuid is null)
         {
             SearchError.Text = "No player found";
-            SearchProgressBar.Value = 0;
-            SearchButton.IsEnabled = true;
-            SearchBox.IsEnabled = true;
+            ResetSearchState();
             return;
-        };
+        }
         SearchProgressBar.Value = 40;
         Console.WriteLine(uuid);
-        Dictionary<String, Tier>? d = await search.ReturnTierLists(uuid);
-        if (d is null)
+        // we get the tierlist
+        Profile? prof = await _search.ReturnTierLists(uuid);
+        if (prof is null)
         {
-            SearchError.Text = "No player found in tierlist";
-            SearchProgressBar.Value = 0;
-            SearchButton.IsEnabled = true;
-            SearchBox.IsEnabled = true;
+            SearchError.Text = "No player found in tier list";
+            ResetSearchState();
             return;
-        };
-        String? headPath = await search.ReturnHead(uuid);
+        }
+        // we get the head
+        String? headPath = await _search.ReturnHead(uuid);
         if (headPath is not null)
         {
             ResultImage.Source = new Bitmap(headPath);
         }
         SearchProgressBar.Value = 80;
-        ArrayList list = new ArrayList();
         
-        foreach (KeyValuePair<string, Tier> item in d)
+        // we now arrange the result page and finish everything up
+        ArrayList topPlayerList = new ArrayList();
+        if (prof.rankings == null)
         {
-            list.Add(item.Key);
+            SearchError.Text = "invalid rankings";
+            ResetSearchState();
+            return;
+        }
+        foreach (KeyValuePair<string, Tier> item in prof.rankings)
+        {
+            topPlayerList.Add(item.Key);
         }
 
-        ResultTop.Text = name + " results";
-        SearchResultList.ItemsSource = list;
+        ResultName.Text = prof.name + " (" + prof.region + ")";
+        ResultPoints.Text = prof.points + " points";
+        ResultOverall.Text = "#" + prof.overall + " in the world";
+        SearchResultList.ItemsSource = topPlayerList;
         SearchProgressBar.Value = 100;
         SearchResultTabs.SelectedIndex = 1;
     }
@@ -66,36 +94,66 @@ public partial class MainWindow : Window
 
     public void ResultExitButtonClick(object sender, RoutedEventArgs e)
     {
-        ResultTop.Text = null;
-        SearchButton.IsEnabled = true;
-        SearchBox.IsEnabled = true;
-        SearchProgressBar.Value = 0;
-        SearchResultTabs.SelectedIndex = 0;
-        search = null;
+        ResetSearchState();
     }
 
-    public void SearchButtonClick(object sender, RoutedEventArgs e)
+    public async void SearchButtonClick(object sender, RoutedEventArgs e)
     {
+        
         SearchError.Text = "";
+        SearchProgressBar.IsVisible = true;
         SearchProgressBar.Value = 0;
-        SearchForPlayer();
         SearchButton.IsEnabled = false;
         SearchBox.IsEnabled = false;
+        await SearchForPlayer();
     }
 
     private void SearchResultList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
         if (SearchResultList.SelectedValue == null) return;
-        Tier tier = search.returnTierFromKey(SearchResultList.SelectedValue.ToString());
+        if(_search is null) return;
+        Tier? tier = _search.ReturnTierFromKey(SearchResultList.SelectedValue.ToString());
         if (tier is null) return;
         char peakHoL;
-        char HoL;
-        if (tier.pos == 1) HoL = 'L';
-        else HoL = 'H';
+        char hoL;
+        if (tier.pos == 1) hoL = 'L';
+        else hoL = 'H';
         if(tier.peak_pos == 1) peakHoL = 'L';
         else peakHoL = 'H';
-        ResultFirst.Text = "Tier: " + HoL + "T" + tier.tier;
+        ResultFirst.Text = "Tier: " + hoL + "T" + tier.tier;
         ResultSecond.Text = "Peak Tier: " + peakHoL + "T" + tier.peak_tier;
         
+    }
+
+    private void Theme_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        
+    }
+
+    private async void SelectingItemsControl_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (Tabs == null) return;
+        if (Tabs.SelectedIndex == 1)
+        {
+            _list.Clear();
+            List<PlayerData>? overAllList = await GetTopPlayers(SearchComboBox.SelectedIndex);
+            if (overAllList is null)
+            {
+                _list.Add("This tier list has no listing available, or its API is incompatible");
+                TopPlayers.ItemsSource = _list;
+            }
+            else
+            {
+                foreach (var item in overAllList)
+                {
+                    _list.Add(item.name + " (" + item.region + ") - " + item.points + " points");
+                }
+                TopPlayers.ItemsSource = _list;
+            }
+        }
+        else
+        {
+            if(TopPlayers.ItemsSource != null) TopPlayers.ItemsSource = null;
+        }
     }
 }

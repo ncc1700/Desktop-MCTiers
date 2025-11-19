@@ -23,5 +23,11 @@
       <Compile Update="Search.cs">
         <DependentUpon>MainWindow.axaml</DependentUpon>
       </Compile>
+      <Compile Update="TopPlayers.cs">
+        <DependentUpon>MainWindow.axaml</DependentUpon>
+      </Compile>
+      <Compile Update="Sites.cs">
+        <DependentUpon>MainWindow.axaml</DependentUpon>
+      </Compile>
     </ItemGroup>
 </Project>

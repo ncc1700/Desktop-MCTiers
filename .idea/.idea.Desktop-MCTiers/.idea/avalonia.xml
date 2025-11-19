@@ -3,6 +3,7 @@
   <component name="AvaloniaProject">
     <option name="projectPerEditor">
       <map>
+        <entry key="Desktop-MCTiers/App.axaml" value="Desktop-MCTiers/Desktop-MCTiers.csproj" />
         <entry key="Desktop-MCTiers/MainWindow.axaml" value="Desktop-MCTiers/Desktop-MCTiers.csproj" />
       </map>
     </option>
