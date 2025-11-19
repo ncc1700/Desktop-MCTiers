@@ -7,18 +7,48 @@
         Title="Desktop MCTiers">
     <TabControl>
         <TabItem Header="Search">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <ComboBox Margin="0 10" SelectedIndex="0">
-                    <ComboBoxItem>MCTiers</ComboBoxItem>
-                    <ComboBoxItem>SubTiers</ComboBoxItem>
-                    <ComboBoxItem>PVPTiers</ComboBoxItem>
-                </ComboBox>
-                <Label FontSize="40" Margin="0 20">Desktop-MCTiers</Label>
-                <Label FontSize="20" HorizontalAlignment="Center">Search for a player</Label>
-                <TextBox x:Name="SearchBox" Margin="0 10"></TextBox>
-                <Button x:Name="SearchButton" HorizontalAlignment="Center" Click="SearchButtonClick">Search</Button>
-                <ProgressBar x:Name="SearchProgressBar" Margin="0 10"></ProgressBar>
-            </StackPanel>
+            <TabControl x:Name="SearchResultTabs">
+                <TabItem>
+                    <StackPanel HorizontalAlignment="Center">
+                        <TextBlock FontSize="20" FontStyle="Italic" Margin="-30 10" x:Name="SearchError"></TextBlock>
+                        <ComboBox Margin="0 10" SelectedIndex="0" x:Name="SearchComboBox">
+                            <ComboBoxItem>MCTiers</ComboBoxItem>
+                            <ComboBoxItem>SubTiers</ComboBoxItem>
+                            <ComboBoxItem>PVPTiers</ComboBoxItem>
+                        </ComboBox>
+                        <Label FontSize="40" Margin="0 20">Desktop-MCTiers</Label>
+                        <Label FontSize="20" HorizontalAlignment="Center">Search for a player</Label>
+                        <TextBox x:Name="SearchBox" Margin="0 10"></TextBox>
+                        <Button x:Name="SearchButton" HorizontalAlignment="Center" Click="SearchButtonClick">Search</Button>
+                        <ProgressBar x:Name="SearchProgressBar" Margin="0 10"></ProgressBar>
+                    </StackPanel>
+                </TabItem>
+                <TabItem>
+                    <Panel>
+                        <TextBlock Margin="0 0" FontSize="20" x:Name="ResultTop"></TextBlock>
+                        <Image 
+                            x:Name="ResultImage"
+                            Width="200"
+                            Height="200" 
+                            HorizontalAlignment="Center"
+                            Margin="-100 -100"></Image>
+                        <Button HorizontalAlignment="Right" Margin="0 60" Click="ResultExitButtonClick">Exit</Button>
+                        <TextBlock HorizontalAlignment="Right" FontSize="30" Margin="0 0" x:Name="ResultFirst"></TextBlock>
+                        <TextBlock HorizontalAlignment="Right" FontSize="30" Margin="0 30" x:Name="ResultSecond"></TextBlock>
+                        <TextBlock HorizontalAlignment="Right" FontSize="30" Margin="0 60" x:Name="ResultThird"></TextBlock>
+                        <ListBox 
+                            SelectionChanged="SearchResultList_OnSelectionChanged"
+                            HorizontalAlignment="Left" 
+                            x:Name="SearchResultList" 
+                            Margin="0 40">
+                        </ListBox>
+                        
+                    </Panel>
+                    
+                    
+                </TabItem>
+            </TabControl>
+            
         </TabItem>
         <TabItem Header="Top Players">
             Nothing here..

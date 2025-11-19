@@ -1,90 +1,103 @@
 using System;
-using System.Net.Http;
-using System.Text.Json;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 
 namespace Desktop_MCTiers;
 
-public class MojangAPI
-{
-    public string? id { get; set; }
-    public string? name { get; set; }
-}
+using static Search;
+
+
 
 public partial class MainWindow : Window
 {
-    
+    private Search? search;
     public MainWindow()
     {
         InitializeComponent();
     }
-    private static HttpClient mojangapi = new()
-    {
-        BaseAddress = new Uri("https://api.mojang.com"),
-    };
     
-    private static HttpClient mctiers = new()
-    {
-        BaseAddress = new Uri("https://mctiers.com"),
-    };
-    
-    
-    private static HttpClient pvptiers = new()
-    {
-        BaseAddress = new Uri("https://pvptiers.com"),
-    };
-    
-    private static HttpClient subtiers = new()
-    {
-        BaseAddress = new Uri("https://subtiers.com"),
-    };
 
-    private async Task<String?> ReturnUuid(String? playerName)
+    public async Task SearchForPlayer()
     {
-        if (playerName is null) return null;
-        HttpResponseMessage mojangUuidSearchResponse;
-        
-        String mojangUuidSearch = "/users/profiles/minecraft/" + SearchBox.Text;
-        try
-        {
-            mojangUuidSearchResponse = await mojangapi.GetAsync(mojangUuidSearch);
-        }
-        catch (HttpRequestException e)
-        {
-            Console.WriteLine(e.Message);
-            return null;
-        }
-        SearchProgressBar.Value += 10;
-        
-        var json = await mojangUuidSearchResponse.Content.ReadAsStringAsync();
-        SearchProgressBar.Value += 10;
-
-        Console.WriteLine(json);
-        MojangAPI? api = JsonSerializer.Deserialize<MojangAPI>(json);
-        return api?.id;
-    }
-
-    public async void SearchForPlayer()
-    {
-        String? uuid = await ReturnUuid(SearchBox.Text);
+        String name = SearchBox.Text;
+        search = new Search(SearchComboBox.SelectedIndex);
+        String? uuid = await search.ReturnUuid(name);
         if (uuid is null)
         {
+            SearchError.Text = "No player found";
+            SearchProgressBar.Value = 0;
             SearchButton.IsEnabled = true;
             SearchBox.IsEnabled = true;
             return;
         };
+        SearchProgressBar.Value = 40;
         Console.WriteLine(uuid);
+        Dictionary<String, Tier>? d = await search.ReturnTierLists(uuid);
+        if (d is null)
+        {
+            SearchError.Text = "No player found in tierlist";
+            SearchProgressBar.Value = 0;
+            SearchButton.IsEnabled = true;
+            SearchBox.IsEnabled = true;
+            return;
+        };
+        String? headpath = await search.ReturnHead(uuid);
+        if (headpath is not null)
+        {
+            ResultImage.Source = new Bitmap(headpath);
+        }
+        SearchProgressBar.Value = 80;
+        ArrayList list = new ArrayList();
+        
+        foreach (KeyValuePair<string, Tier> item in d)
+        {
+            list.Add(item.Key);
+        }
+
+        ResultTop.Text = name + " results";
+        SearchResultList.ItemsSource = list;
+        SearchProgressBar.Value = 100;
+        SearchResultTabs.SelectedIndex = 1;
+    }
+    
+
+    public void ResultExitButtonClick(object sender, RoutedEventArgs e)
+    {
+        ResultTop.Text = null;
         SearchButton.IsEnabled = true;
         SearchBox.IsEnabled = true;
+        SearchProgressBar.Value = 0;
+        SearchResultTabs.SelectedIndex = 0;
+        search = null;
     }
 
     public void SearchButtonClick(object sender, RoutedEventArgs e)
     {
+        SearchError.Text = "";
         SearchProgressBar.Value = 0;
         SearchForPlayer();
         SearchButton.IsEnabled = false;
         SearchBox.IsEnabled = false;
+    }
+
+    private void SearchResultList_OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
+    {
+        if (SearchResultList.SelectedValue == null) return;
+        Tier tier = search.returnTierFromKey(SearchResultList.SelectedValue.ToString());
+        if (tier is null) return;
+        char peakHoL;
+        char HoL;
+        if (tier.pos == 1) HoL = 'L';
+        else HoL = 'H';
+        if(tier.peak_pos == 1) peakHoL = 'L';
+        else peakHoL = 'H';
+        ResultFirst.Text = "Tier: " + HoL + "T" + tier.tier;
+        ResultSecond.Text = "Peak Tier: " + peakHoL + "T" + tier.peak_tier;
+        
     }
 }
