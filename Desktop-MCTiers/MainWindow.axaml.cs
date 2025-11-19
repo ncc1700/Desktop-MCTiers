@@ -20,8 +20,6 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
     }
-    
-
     public async Task SearchForPlayer()
     {
         String name = SearchBox.Text;
@@ -46,10 +44,10 @@ public partial class MainWindow : Window
             SearchBox.IsEnabled = true;
             return;
         };
-        String? headpath = await search.ReturnHead(uuid);
-        if (headpath is not null)
+        String? headPath = await search.ReturnHead(uuid);
+        if (headPath is not null)
         {
-            ResultImage.Source = new Bitmap(headpath);
+            ResultImage.Source = new Bitmap(headPath);
         }
         SearchProgressBar.Value = 80;
         ArrayList list = new ArrayList();
